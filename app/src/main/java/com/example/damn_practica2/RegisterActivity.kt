@@ -1,10 +1,16 @@
 package com.example.damn_practica2
 
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope // Para usar coroutines con el ciclo de vida de la actividad
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID // Importa UUID para generar IDs únicos
 
 // Esta es la actividad para el registro de usuarios
@@ -14,24 +20,37 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var editTextRegUsername: EditText
     private lateinit var editTextRegPassword: EditText
     private lateinit var editTextRegConfirmPassword: EditText
+    private lateinit var spinnerRole: Spinner // Nuevo Spinner para el rol
     private lateinit var buttonRegisterUser: Button
+
+    private lateinit var userDao: UserDao // Instancia del DAO de Room
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Establece el layout para esta actividad usando el archivo activity_register.xml
         setContentView(R.layout.activity_register)
 
-        // Inicializar los elementos de la UI encontrándolos por sus IDs
+        // Inicializar la base de datos Room y el DAO
+        val database = AppDatabase.getDatabase(this, lifecycleScope)
+        userDao = database.userDao()
+
         editTextRegUsername = findViewById(R.id.editTextRegUsername)
         editTextRegPassword = findViewById(R.id.editTextRegPassword)
         editTextRegConfirmPassword = findViewById(R.id.editTextRegConfirmPassword)
+        spinnerRole = findViewById(R.id.spinnerRole) // Inicializar el Spinner
         buttonRegisterUser = findViewById(R.id.buttonRegisterUser)
 
-        // Configurar un OnClickListener para el botón de Registrar
+        // Configurar el Spinner con las opciones de rol
+        val roles = arrayOf("user", "admin") // Opciones de rol
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, roles)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerRole.adapter = adapter
+
         buttonRegisterUser.setOnClickListener {
-            val username = editTextRegUsername.text.toString().trim() // .trim() para quitar espacios
+            val username = editTextRegUsername.text.toString().trim()
             val password = editTextRegPassword.text.toString()
             val confirmPassword = editTextRegConfirmPassword.text.toString()
+            val selectedRole = spinnerRole.selectedItem.toString() // Obtener el rol seleccionado
 
             // Validación de campos vacíos
             if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
@@ -46,28 +65,28 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
             }
             // Validación de usuario ya existente (simulada)
-            else if (UserDatabase.findUserByUsername(username) != null) {
-                Toast.makeText(this, "El nombre de usuario ya existe", Toast.LENGTH_SHORT).show()
-            }
             else {
-                // Generar un ID único para el nuevo usuario
-                val newUserId = UUID.randomUUID().toString()
-                // En una aplicación real, la contraseña se hashearía aquí antes de crear el objeto User
-                // Por simplicidad para la simulación, usaremos la contraseña tal cual.
-                val newUser = User(id = newUserId, username = username, passwordHash = password, role = "user")
+                // Usar coroutines para operaciones de base de datos asíncronas
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val existingUser = userDao.getUserByUsername(username)
+                    withContext(Dispatchers.Main) {
+                        if (existingUser != null) {
+                            Toast.makeText(this@RegisterActivity, "El nombre de usuario ya existe", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Crear un nuevo usuario con el rol seleccionado
+                            // Nota: El ID es autoGenerate en la entidad User de Room
+                            val newUser = User(username = username, passwordHash = password, role = selectedRole)
+                            userDao.insertUser(newUser) // Insertar en Room
 
-                // Añadir el nuevo usuario a nuestra "base de datos" en memoria
-                UserDatabase.addUser(newUser)
+                            Toast.makeText(this@RegisterActivity, "Usuario $username registrado exitosamente como $selectedRole.", Toast.LENGTH_LONG).show()
 
-                Toast.makeText(this, "Usuario $username registrado exitosamente.", Toast.LENGTH_LONG).show()
-
-                // Opcional: Limpiar los campos después del registro
-                editTextRegUsername.setText("")
-                editTextRegPassword.setText("")
-                editTextRegConfirmPassword.setText("")
-
-                // Volver a la pantalla de login después de un registro exitoso
-                finish() // Cierra esta actividad y regresa a la anterior (MainActivity)
+                            editTextRegUsername.setText("")
+                            editTextRegPassword.setText("")
+                            editTextRegConfirmPassword.setText("")
+                            finish() // Volver a la pantalla de login
+                        }
+                    }
+                }
             }
         }
     }

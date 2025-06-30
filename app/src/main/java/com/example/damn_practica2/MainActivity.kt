@@ -6,6 +6,10 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope // Para usar coroutines con el ciclo de vida de la actividad
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,9 +18,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonLogin: Button
     private lateinit var buttonRegister: Button
 
+    private lateinit var userDao: UserDao // Instancia del DAO de Room
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Inicializar la base de datos Room y el DAO
+        val database = AppDatabase.getDatabase(this, lifecycleScope)
+        userDao = database.userDao()
 
         editTextUsername = findViewById(R.id.editTextUsername)
         editTextPassword = findViewById(R.id.editTextPassword)
@@ -30,22 +40,22 @@ class MainActivity : AppCompatActivity() {
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Por favor, ingresa usuario y contraseña", Toast.LENGTH_SHORT).show()
             } else {
-                // Buscar el usuario en nuestra base de datos simulada
-                val user = UserDatabase.findUserByUsername(username)
+                // Usar coroutines para operaciones de base de datos asíncronas
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val user = userDao.getUserByUsername(username) // Buscar usuario en Room
+                    withContext(Dispatchers.Main) {
+                        if (user != null && user.passwordHash == password) {
+                            Toast.makeText(this@MainActivity, "¡Bienvenido, ${user.username}!", Toast.LENGTH_LONG).show()
 
-                // Verificar si el usuario existe y si la contraseña coincide
-                if (user != null && user.passwordHash == password) {
-                    Toast.makeText(this, "¡Bienvenido, ${user.username}!", Toast.LENGTH_LONG).show()
-
-                    // Navegación al DashboardActivity
-                    val intent = Intent(this, DashboardActivity::class.java)
-                    // Pasar el nombre de usuario y el rol a la DashboardActivity
-                    intent.putExtra("username", user.username)
-                    intent.putExtra("userRole", user.role)
-                    startActivity(intent)
-                    finish() // Cierra MainActivity para que el usuario no pueda volver con el botón atrás
-                } else {
-                    Toast.makeText(this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show()
+                            val intent = Intent(this@MainActivity, DashboardActivity::class.java)
+                            intent.putExtra("username", user.username)
+                            intent.putExtra("userRole", user.role)
+                            startActivity(intent)
+                            finish() // Cierra MainActivity para que el usuario no pueda volver con el botón atrás
+                        } else {
+                            Toast.makeText(this@MainActivity, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             }
         }
