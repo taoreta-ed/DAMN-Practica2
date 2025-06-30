@@ -5,13 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    tools:context=".MainActivity">
+    tools:context=".RegisterActivity">
 
     <TextView
-        android:id="@+id/textViewTitle"
+        android:id="@+id/textViewRegisterTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:text="Registro de Usuario"
         android:textSize="32sp"
         android:textStyle="bold"
         android:layout_marginTop="64dp"
@@ -20,53 +20,54 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editTextUsername"
+        android:id="@+id/editTextRegUsername"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Username"
+        android:hint="Nombre de Usuario"
         android:inputType="text"
         android:padding="12dp"
         android:layout_marginTop="32dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewTitle"
+        app:layout_constraintTop_toBottomOf="@id/textViewRegisterTitle"
         app:layout_constraintWidth_percent="0.9" />
 
     <EditText
-        android:id="@+id/editTextPassword"
+        android:id="@+id/editTextRegPassword"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Password"
+        android:hint="Contraseña"
         android:inputType="textPassword"
         android:padding="12dp"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextUsername"
+        app:layout_constraintTop_toBottomOf="@id/editTextRegUsername"
+        app:layout_constraintWidth_percent="0.9" />
+
+    <EditText
+        android:id="@+id/editTextRegConfirmPassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Confirmar Contraseña"
+        android:inputType="textPassword"
+        android:padding="12dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editTextRegPassword"
         app:layout_constraintWidth_percent="0.9" />
 
     <Button
-        android:id="@+id/buttonLogin"
+        android:id="@+id/buttonRegisterUser"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:text="Registrar"
         android:layout_marginTop="24dp"
         android:padding="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextPassword"
-        app:layout_constraintWidth_percent="0.6" />
-
-    <Button
-        android:id="@+id/buttonRegister"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Register"
-        android:layout_marginTop="16dp"
-        android:padding="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonLogin"
+        app:layout_constraintTop_toBottomOf="@id/editTextRegConfirmPassword"
         app:layout_constraintWidth_percent="0.6" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

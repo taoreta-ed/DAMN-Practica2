@@ -21,6 +21,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".RegisterActivity"
+            android:exported="false">
+        </activity>
+
+        <!-- AÑADE ESTE BLOQUE PARA DECLARAR DashboardActivity -->
+        <activity android:name=".DashboardActivity"
+            android:exported="false">
+        </activity>
+        <!-- FIN DEL BLOQUE A AÑADIR -->
+
     </application>
 
 </manifest>
